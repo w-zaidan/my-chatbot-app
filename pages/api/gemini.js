@@ -19,6 +19,11 @@ export default async function handler(req, res) {
     const aiReply = result.data.candidates[0]?.content?.parts[0]?.text ?? 'No reply';
     res.status(200).json({ reply: aiReply });
   } catch (error) {
-    res.status(500).json({ message: error.message });
+    console.error(error);  // ←（追加）VercelのRuntime Logsでもエラーが見える
+    res.status(500).json({ 
+      message: error.message,
+      detail: error.response?.data,         // Geminiからのエラー詳細を返す
+      env: process.env.GEMINI_API_KEY ? 'KEY_SET' : 'KEY_NOT_SET' // 環境変数があるか判定
+    });
   }
 }
