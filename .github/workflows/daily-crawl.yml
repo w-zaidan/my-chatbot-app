@@ -1,0 +1,27 @@
+name: Daily Web Crawl
+
+on:
+  schedule:
+    - cron: '0 18 * * *' # 日本時間AM3:00（UTC18:00）
+  workflow_dispatch:
+
+jobs:
+  crawl-and-save:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run crawler
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+        run: node crawl-and-save.js
