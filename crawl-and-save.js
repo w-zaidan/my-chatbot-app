@@ -1,8 +1,8 @@
 // crawl-and-save.js
 
-import { createClient } from '@supabase/supabase-js'
-import axios from 'axios'
-import cheerio from 'cheerio'
+const cheerio = require('cheerio');
+const axios = require('axios');
+const { createClient } = require('@supabase/supabase-js');
 
 const baseUrl = 'https://yarukiouendan.or.jp/'
 
