@@ -7,7 +7,7 @@ export default async function handler(req, res) {
   }
   const { prompt } = req.body;
   const apiKey = process.env.GEMINI_API_KEY;
-  const url = 'https://generativelanguage.googleapis.com/v1/models/gemini-1.5-pro-002:generateContent?key=' + apiKey;
+  const url = 'https://generativelanguage.googleapis.com/v1/models/gemini-1.5-pro:generateContent?key=' + apiKey;
 
   try {
     const result = await axios.post(
