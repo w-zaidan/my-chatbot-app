@@ -6,7 +6,16 @@ const { createClient } = require('@supabase/supabase-js');
 
 const baseUrl = 'https://yarukiouendan.or.jp/'
 
-// Supabaseの認証情報（GitHub Actionsでは環境変数から受け取る）
+// 除外する拡張子リスト
+const EXCLUDE_EXTS = [
+  '.pdf', '.zip', '.doc', '.docx', '.xls', '.xlsx', '.png', '.jpg', '.jpeg', '.gif', '.csv'
+];
+
+function isExcluded(url) {
+  return EXCLUDE_EXTS.some(ext => url.toLowerCase().split('?')[0].endsWith(ext));
+}
+
+// Supabaseの認証情報
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL,
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
@@ -16,19 +25,28 @@ const visited = new Set()
 const results = []
 
 async function crawl(url) {
-  if (visited.has(url)) return
+  if (visited.has(url) || isExcluded(url)) return
   visited.add(url)
 
-  const { data } = await axios.get(url)
+  let data;
+  try {
+    const res = await axios.get(url, { timeout: 10000 });
+    data = res.data;
+  } catch (err) {
+    console.error('Failed to fetch:', url, err.message);
+    return;
+  }
+
   const $ = cheerio.load(data)
   const content = $('body').text().trim().replace(/\s+/g, ' ')
   results.push({ url, content })
 
   $('a[href^="/"], a[href^="' + baseUrl + '"]').each((_, el) => {
     const href = $(el).attr('href')
+    if (!href) return;
     let nextUrl = href.startsWith('http') ? href : baseUrl.replace(/\/$/, '') + href
-    // 同じサイト内だけ
-    if (nextUrl.startsWith(baseUrl)) crawl(nextUrl)
+    // サイト内かつバイナリ拡張子でない場合のみ
+    if (nextUrl.startsWith(baseUrl) && !isExcluded(nextUrl)) crawl(nextUrl)
   })
 }
 
