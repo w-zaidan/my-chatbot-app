@@ -38,8 +38,20 @@ async function crawl(url) {
   }
 
   const $ = cheerio.load(data)
-  const content = $('body').text().trim().replace(/\s+/g, ' ')
-  results.push({ url, content })
+  // 本文を抜き出す優先順（うまくいかない場合は順次追加/調整OK）
+  let content =
+    $('.post-content').text().trim() ||
+    $('.entry-content').text().trim() ||
+    $('.post').text().trim() ||
+    $('.content').text().trim() ||
+    $('main').text().trim() ||
+    $('article').text().trim();
+
+  if (!content) {
+    content = $('body').text().trim();
+  }
+
+results.push({ url, content });
 
   $('a[href^="/"], a[href^="' + baseUrl + '"]').each((_, el) => {
     const href = $(el).attr('href')
